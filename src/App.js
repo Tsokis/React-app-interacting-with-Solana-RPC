@@ -3,24 +3,24 @@ import './App.css';
 import Info from './Components/Info.js';
 import Input from './Components/Input.js';
 import ButtonGroup from './Components/ButtonComp';
-import * as solanaWeb3 from '@solana/web3.js';
+import { Connection,Keypair,PublicKey,Transaction,SystemProgram,sendAndConfirmTransaction } from '@solana/web3.js'; //solanaWeb3 from '@solana/web3.js';
 
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
       lamports: 0,
-      connection:new solanaWeb3.Connection('https://api.devnet.solana.com'),// cluster connection devnet
-      recieverPublicKey:new solanaWeb3.PublicKey(''),//reciever's public key
+      connection:new Connection('https://api.devnet.solana.com'),// cluster connection
+      recieverPublicKey:new PublicKey(''),//reciever's public key
       userAccountValue:'',
       isLoading:false,
-      staticLamportsForAirdrop:200000000 //2000000000 == 2 SOL
+      staticLamportsForAirdrop:200000000 //2000000000 // == 2 SOL
     };
     this.secret = new Uint8Array([]);//secret key as Uint8 Array
-    this.accountKeyPairTest = solanaWeb3.Keypair.fromSecretKey(this.secret)
+    this.accountKeyPairTest = Keypair.fromSecretKey(this.secret)
     this.publicKeyStr = this.accountKeyPairTest.publicKey.toString();
-    this.pKey = new solanaWeb3.PublicKey(this.publicKeyStr);
-    this.transcation = new solanaWeb3.Transaction();
+    this.pKey = new PublicKey(this.publicKeyStr);
+    this.transaction = new Transaction();
     this.sendTransactionHandler = this.sendTransactionHandler.bind(this);
   }
   
@@ -36,14 +36,14 @@ class App extends Component {
   
   sendTransactionHandler(){
     this.setState({isLoading:true})
-    let transferFromTo = solanaWeb3.SystemProgram.transfer({
+    let transferFromTo = SystemProgram.transfer({
       fromPubkey: this.pKey, // your public key
       toPubkey: this.state.recieverPublicKey, // reciever's public key
       lamports: 100000000 // static transfer of 0.1 SOL 
    });
-    this.transcation.add(transferFromTo);
+    this.transaction.add(transferFromTo);
     //Method for sending and signing the transaction 
-    let signature = solanaWeb3.sendAndConfirmTransaction(this.state.connection,this.transcation,[this.accountKeyPairTest])
+    let signature = sendAndConfirmTransaction(this.state.connection,this.transaction,[this.accountKeyPairTest])
     .then(res => {
        if(res.length!==0){
         this.setState({isLoading:!this.state.isLoading})
